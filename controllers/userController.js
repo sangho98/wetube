@@ -36,15 +36,88 @@ export const postLogin = passport.authenticate("local", {
   successRedirect: routes.home,
 });
 
+export const githubLoginCallback = async (_, __, profile, cb) => {
+  const {
+    _json: { id, avatar_url: avatarUrl, name, email },
+  } = profile;
+  try {
+    const user = await User.findOne({ email });
+    if (user) {
+      user.githubId = id;
+      user.avatarUrl = avatarUrl;
+      user.save();
+      console.log("here");
+      return cb(null, user);
+    }
+    const newUser = await User.create({
+      email,
+      name,
+      githubId: id,
+      avatarUrl,
+    });
+    return cb(null, newUser);
+  } catch (error) {
+    return cb(error);
+  }
+};
+export const githubLogin = passport.authenticate("github");
+
+export const postGithubLogin = (req, res) => {
+  res.redirect(routes.home);
+};
 export const logout = (req, res) => {
-  // TO DO: Process Logout
+  req.logout();
   res.redirect(routes.home);
 };
 
-export const users = (req, res) => res.render("users", { pageTitle: "Users" });
-export const userDetail = (req, res) =>
-  res.render("userDetail", { pageTitle: "Detail User" });
-export const editProfile = (req, res) =>
+export const userDetail = async (req, res) => {
+  const {
+    params: { id },
+  } = req;
+  try {
+    if (id === "change_password") {
+      const user = await User.findById(req.user.id);
+      res.render("changePassword", {
+        pageTitle: "Change Password",
+        user: user,
+      });
+    }
+    const user = await User.findById(id);
+    res.render("userDetail", { pageTitle: "User Detail", user: user });
+  } catch (error) {
+    res.redirect(routes.home);
+  }
+};
+
+export const users = (req, res) => {
+  res.render("users", { pageTitle: "Users" });
+};
+
+export const me = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.render("userDetail", { pageTitle: "User Detail", user: user });
+  } catch (error) {
+    res.redirect(routes.home);
+  }
+};
+export const getEditProfile = (req, res) =>
   res.render("editProfile", { pageTitle: "Edit Profile" });
+
+export const postEditProfile = (req, res) => {
+  const {
+    body: { name, email },
+    file: { path },
+  } = req;
+  try {
+  } catch (error) {
+    res.render("editProfile");
+  }
+};
 export const changePassword = (req, res) =>
   res.render("changePassword", { pageTitle: "Change Password" });
+
+export const postChangePassword = async (req, res) => {
+  const user = await User.findById();
+  console.log(user.id);
+};

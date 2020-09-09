@@ -126,6 +126,9 @@ a {
   all: unset;
   cursor: pointer; }
 
+a:visited {
+  color: white; }
+
 *,
 input {
   -webkit-box-sizing: border-box;
@@ -150,6 +153,9 @@ input {
 html,
 body {
   height: 100%; }
+
+a visited {
+  color: white; }
 
 body {
   background-color: #f5f5f5;
